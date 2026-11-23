@@ -1,0 +1,67 @@
+window.CatLib = Object.assign(window.CatLib || {}, {
+  "показать": (t) => String(t),
+  "заголовок": (t) => "\n=== " + String(t).toUpperCase() + " ===\n",
+  "рамка": (t) => { const s = String(t), l = "─".repeat(s.length + 4); return `┌${l}┐\n│  ${s}  │\n└${l}┘`; },
+  "список": (...a) => a.map((el, i) => `${i + 1}. ${el}`).join("\n"),
+  "сложить": (...n) => n.reduce((a, b) => Number(a) + Number(b), 0),
+  "вычесть": (a, b) => Number(a) - Number(b),
+  "умножить": (...n) => n.reduce((a, b) => Number(a) * Number(b), 1),
+  "разделить": (a, b) => Number(b) === 0 ? "На ноль делить нельзя" : Number(a) / Number(b),
+  "процент": (s, p) => (Number(s) * Number(p)) / 100,
+  "скидка": (c, p) => Number(c) - (Number(c) * Number(p)) / 100,
+  "степень": (a, b) => Math.pow(Number(a), Number(b)),
+  "корень": (a) => Math.sqrt(Number(a)),
+  "округлить": (a, z = 2) => Number(Number(a).toFixed(Number(z))),
+  "среднее": (...n) => n.reduce((a, b) => Number(a) + Number(b), 0) / n.length,
+  "случайное": (min = 1, max = 100) => Math.floor(Math.random() * (Number(max) - Number(min) + 1)) + Number(min),
+  "кубик": (g = 6) => Math.floor(Math.random() * Number(g)) + 1,
+  "монетка": () => Math.random() < 0.5 ? "Орёл" : "Решка",
+  "выбрать": (...v) => v[Math.floor(Math.random() * v.length)],
+  "длина": (t) => String(t).length,
+  "слова": (t) => String(t).trim().split(/\s+/).filter(Boolean).length,
+  "заменить": (t, a, b) => String(t).replaceAll(String(a), String(b)),
+  "дата": () => new Date().toLocaleDateString("ru-RU"),
+  "время": () => new Date().toLocaleTimeString("ru-RU"),
+  "таймер": (sec, fn) => { setTimeout(() => { if(typeof fn === "function") fn(); }, Number(sec)*1000); return "Таймер: " + sec + " сек."; },
+  "звук": (freq = 440, sec = 0.3) => { const C = window.AudioContext || window.webkitAudioContext; if(!C) return "Нет звука"; const ctx = new C(), o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.value = Number(freq); g.gain.value = 0.2; o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + Number(sec)); return "Звук " + freq + " Гц"; },
+  "если": (cond, a, b = "") => cond ? a : b,
+  "сохранить": (k, v) => { localStorage.setItem("cat_" + k, JSON.stringify(v)); return "Сохранено: " + k; },
+  "загрузить": (k) => { const v = localStorage.getItem("cat_" + k); return v ? JSON.parse(v) : "Пусто"; }
+});
+window.CatLib = Object.assign(window.CatLib || {}, {
+  _turtle: { x: 150, y: 150, angle: -90, color: "#8a2be2", width: 3 },
+  "холстФон": (id, c = "#111") => { const el = document.getElementById(id); if(!el) return "Нет холста"; const ctx = el.getContext("2d"); ctx.fillStyle = c; ctx.fillRect(0, 0, el.width, el.height); return "Фон залит"; },
+  "холстОчистить": (id) => { const el = document.getElementById(id); if(!el) return "Нет холста"; el.getContext("2d").clearRect(0, 0, el.width, el.height); window.CatLib._turtle.x = el.width/2; window.CatLib._turtle.y = el.height/2; return "Холст очищен"; },
+  "рисоватьКруг": (id, x = 100, y = 100, r = 40, c = "#8a2be2") => { const el = document.getElementById(id); if(!el) return "Нет холста"; const ctx = el.getContext("2d"); ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fillStyle = c; ctx.fill(); return "Круг готов"; },
+  "рисоватьКвадрат": (id, x = 50, y = 50, w = 80, h = 80, c = "#ff9800") => { const el = document.getElementById(id); if(!el) return "Нет холста"; const ctx = el.getContext("2d"); ctx.fillStyle = c; ctx.fillRect(x, y, w, h); return "Квадрат готов"; },
+  "рисоватьЛинию": (id, x1 = 10, y1 = 10, x2 = 150, y2 = 150, c = "#00e676", w = 3) => { const el = document.getElementById(id); if(!el) return "Нет холста"; const ctx = el.getContext("2d"); ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.strokeStyle = c; ctx.lineWidth = w; ctx.stroke(); return "Линия готова"; },
+  "рисоватьТекст": (id, txt = "Мяу!", x = 50, y = 50, c = "#fff", sz = 20) => { const el = document.getElementById(id); if(!el) return "Нет холста"; const ctx = el.getContext("2d"); ctx.fillStyle = c; ctx.font = sz + "px sans-serif"; ctx.fillText(txt, x, y); return "Текст написан"; },
+  "черепашкаВперёд": (id, шаг = 40) => { const el = document.getElementById(id); if(!el) return "Нет холста"; const t = window.CatLib._turtle, rad = t.angle * Math.PI / 180, nx = t.x + Math.cos(rad)*шаг, ny = t.y + Math.sin(rad)*шаг; const ctx = el.getContext("2d"); ctx.beginPath(); ctx.moveTo(t.x, t.y); ctx.lineTo(nx, ny); ctx.strokeStyle = t.color; ctx.lineWidth = t.width; ctx.stroke(); t.x = nx; t.y = ny; return `Черепашка: (${Math.round(nx)}, ${Math.round(ny)})`; },
+  "черепашкаПоворот": (град = 90) => { window.CatLib._turtle.angle += Number(град); return "Угол: " + window.CatLib._turtle.angle; },
+  "черепашкаЦвет": (c = "#8a2be2") => { window.CatLib._turtle.color = c; return "Цвет: " + c; }
+});
+window.CatLib = Object.assign(window.CatLib || {}, {
+  "шкала": (val, max = 100, w = 20) => { const f = Math.round((Number(val) / Number(max)) * Number(w)); return `[${"█".repeat(f)}${"░".repeat(Math.max(0, Number(w) - f))}] ${val}/${max}`; },
+  "текстГрафик": (d) => { const e = Object.entries(d), m = Math.max(...e.map(([, v]) => Number(v)), 1); return e.map(([k, v]) => `${k.padEnd(10, " ")} | ${"▇".repeat(Math.round((Number(v) / m) * 20))} (${v})`).join("\n"); },
+  "графикСтолбцы": (id, labels, vals, c = "#8a2be2") => { const el = document.getElementById(id); if(!el) return "Холст не найден"; const ctx = el.getContext("2d"); ctx.clearRect(0,0,el.width,el.height); const m = Math.max(...vals.map(Number),1), s = el.width/vals.length; vals.forEach((v,i)=>{ const h=(Number(v)/m)*(el.height-40); ctx.fillStyle=c; ctx.fillRect(i*s+10,el.height-h-20,s-20,h); ctx.fillStyle="#888"; ctx.fillText(labels[i]||"",i*s+10,el.height-5); }); return "График построен"; },
+  "графикЛиния": (id, pts, c = "#00bcd4") => { const el = document.getElementById(id); if(!el) return "Холст не найден"; const ctx = el.getContext("2d"); ctx.clearRect(0,0,el.width,el.height); const m = Math.max(...pts.map(Number),1), s = el.width/Math.max(pts.length-1,1); ctx.beginPath(); ctx.strokeStyle=c; ctx.lineWidth=3; pts.forEach((v,i)=>{ const x=i*s, y=el.height-(Number(v)/m)*(el.height-20)-10; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); }); ctx.stroke(); return "Линия построена"; }
+});
+window.CatLib = Object.assign(window.CatLib || {}, {
+  _robotSocket: null,
+  _robotUrl: "http://192.168.4.1",
+  "роботАдрес": (url) => { window.CatLib._robotUrl = String(url); return "Адрес: " + url; },
+  "роботПодключитьWS": (ws = "ws://192.168.4.1:81") => { window.CatLib._robotSocket = new WebSocket(ws); return "WS подключено: " + ws; },
+  "роботКоманда": async (cmd, p = {}) => { if(window.CatLib._robotSocket && window.CatLib._robotSocket.readyState===1){ window.CatLib._robotSocket.send(JSON.stringify({cmd,...p})); return "WS: "+cmd; } const q = new URLSearchParams({cmd,...p}).toString(); await fetch(`${window.CatLib._robotUrl}/action?${q}`, {mode:"no-cors"}); return "Wi-Fi: "+cmd; },
+  "дронВзлёт": (alt = 100) => window.CatLib["роботКоманда"]("takeoff", {alt}),
+  "дронПосадка": () => window.CatLib["роботКоманда"]("land"),
+  "дронВперёд": (dist = 50) => window.CatLib["роботКоманда"]("forward", {dist}),
+  "дронНазад": (dist = 50) => window.CatLib["роботКоманда"]("back", {dist}),
+  "дронВлево": (dist = 50) => window.CatLib["роботКоманда"]("left", {dist}),
+  "дронВправо": (dist = 50) => window.CatLib["роботКоманда"]("right", {dist}),
+  "дронПоворот": (deg = 90) => window.CatLib["роботКоманда"]("cw", {deg}),
+  "дронСтоп": () => window.CatLib["роботКоманда"]("emergency"),
+  "роботМоторы": (l = 100, r = 100) => window.CatLib["роботКоманда"]("motors", {l, r}),
+  "роботСерво": (pin = 9, angle = 90) => window.CatLib["роботКоманда"]("servo", {pin, angle}),
+  "проектСвет": (pin = 2, state = 1) => window.CatLib["роботКоманда"]("led", {pin, state}),
+  "проектДатчик": async (pin = 0) => { const r = await fetch(`${window.CatLib._robotUrl}/sensor?pin=${pin}`); return await r.text(); }
+});
